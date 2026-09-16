@@ -326,14 +326,14 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
                   onChange={(e) => setPasscode(e.target.value)}
                   required
                   className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-slate-50 font-semibold"
-                  placeholder="Masukkan passcode (cth: admin123)"
+                  placeholder="Masukkan passcode"
                 />
               </div>
 
               {loginError && (
                 <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-xl text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
-                  <span>Passcode salah! Gunakan: <strong className="font-mono">admin123</strong></span>
+                  <span>Passcode salah! Silakan masukkan passcode yang benar.</span>
                 </div>
               )}
 
@@ -344,9 +344,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
                 Masuk Dashboard Admin
               </button>
             </form>
-            <div className="text-center pt-2 border-t border-slate-100">
-              <span className="text-[11px] text-slate-400">💡 Passcode Default Demo: <code className="bg-slate-100 px-1.5 py-0.5 rounded text-slate-700 font-mono">admin123</code></span>
-            </div>
+
           </div>
         </div>
       ) : (
