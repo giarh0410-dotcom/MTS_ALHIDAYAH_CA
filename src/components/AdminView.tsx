@@ -1043,7 +1043,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
                   ></textarea>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Upload Gambar dari Perangkat atau URL</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Upload Gambar Kegiatan</label>
                   <input
                     type="file"
                     accept="image/*"
@@ -1075,20 +1075,13 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
                             reader.readAsDataURL(file);
                           });
                           setNewNews({ ...newNews, gambar: compressedBase64 });
-                          triggerSuccess(`Gambar ${file.name} berhasil dikompresi dan diunggah dengan cepat!`);
+                          triggerSuccess(`Gambar ${file.name} berhasil dikompresi dan diunggah!`);
                         } catch (err) {
                           triggerSuccess(`Gagal mengompresi gambar.`);
                         }
                       }
                     }}
-                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-slate-200 rounded-xl p-1 bg-slate-50 mb-2"
-                  />
-                  <input
-                    type="text"
-                    value={newNews.gambar}
-                    onChange={(e) => setNewNews({...newNews, gambar: e.target.value})}
-                    placeholder="Atau masukkan URL gambar https://..."
-                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-slate-200 rounded-xl p-1 bg-slate-50"
                   />
                 </div>
                 <div className="sm:col-span-2 flex justify-end gap-3">
