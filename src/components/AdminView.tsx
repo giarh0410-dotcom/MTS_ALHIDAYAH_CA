@@ -76,6 +76,29 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
       }
 
       try {
+        const newsSnap = await getDocs(collection(db, "news"));
+        if (!newsSnap.empty) {
+          const list: NewsArticle[] = [];
+          newsSnap.forEach((docSnap) => {
+            list.push(docSnap.data() as NewsArticle);
+          });
+          setNewsList(list);
+        } else {
+          const storedNews = localStorage.getItem("mts_admin_news");
+          if (storedNews) {
+            setNewsList(JSON.parse(storedNews));
+          }
+        }
+      } catch (e) {
+        try {
+          const storedNews = localStorage.getItem("mts_admin_news");
+          if (storedNews) {
+            setNewsList(JSON.parse(storedNews));
+          }
+        } catch (err) {}
+      }
+
+      try {
         const storedOrg = localStorage.getItem("mts_admin_org");
         if (storedOrg) {
           setOrgStructure(JSON.parse(storedOrg));
@@ -101,7 +124,8 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
   const [newTeacher, setNewTeacher] = useState({ name: "", nip: "", subject: "", photo: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&auto=format&fit=crop&q=80" });
   const [newAlumni, setNewAlumni] = useState({ nama: "", tahun: "Lulus 2025", kuliah: "", foto: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=400&auto=format&fit=crop&q=80" });
   const [newMedia, setNewMedia] = useState({ title: "", type: "image" as "image" | "video", url: "" });
-  const [newNews, setNewNews] = useState({ judul: "", kategori: "Kegiatan Sekolah", penulis: "Admin", ringkasan: "", konten: "", gambar: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80" });
+  const [newNews, setNewNews] = useState({ judul: "", kategori: "Kegiatan Sekolah", penulis: "Admin", tanggal: "16 September 2026", ringkasan: "", konten: "", gambar: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80" });
+  const [editingNewsId, setEditingNewsId] = useState<string | null>(null);
   const [newOrg, setNewOrg] = useState({ jabatan: "", nama: "" });
 
   const handleLogin = (e: React.FormEvent) => {
@@ -214,24 +238,56 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
     }
   };
 
-  const handleAddNews = (e: React.FormEvent) => {
+  const handleAddNews = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newNews.judul || !newNews.ringkasan) return;
-    const item: NewsArticle = {
-      id: `NEWS-${Date.now()}`,
-      judul: newNews.judul,
-      tanggal: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-      kategori: newNews.kategori,
-      penulis: newNews.penulis,
-      ringkasan: newNews.ringkasan,
-      konten: newNews.konten || newNews.ringkasan,
-      gambar: newNews.gambar
-    };
-    const updated = [item, ...newsList];
-    setNewsList(updated);
-    localStorage.setItem("mts_admin_news", JSON.stringify(updated));
-    setNewNews({ judul: "", kategori: "Kegiatan Sekolah", penulis: "Admin", ringkasan: "", konten: "", gambar: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80" });
-    triggerSuccess("Kegiatan & Berita sekolah berhasil dipublikasikan dan otomatis masuk ke menu Info Sekolah!");
+    
+    if (editingNewsId) {
+      const updated = newsList.map(item => item.id === editingNewsId ? {
+        ...item,
+        judul: newNews.judul,
+        kategori: newNews.kategori,
+        tanggal: newNews.tanggal,
+        penulis: newNews.penulis,
+        ringkasan: newNews.ringkasan,
+        konten: newNews.konten || newNews.ringkasan,
+        gambar: newNews.gambar
+      } : item);
+      setNewsList(updated);
+      localStorage.setItem("mts_admin_news", JSON.stringify(updated));
+      try {
+        const editedItem = updated.find(i => i.id === editingNewsId);
+        if (editedItem) {
+          await setDoc(doc(db, "news", editingNewsId), editedItem);
+        }
+      } catch (err) {
+        handleFirestoreError(err, OperationType.UPDATE, `news/${editingNewsId}`);
+      }
+      setEditingNewsId(null);
+      setNewNews({ judul: "", kategori: "Kegiatan Sekolah", penulis: "Admin", tanggal: "16 September 2026", ringkasan: "", konten: "", gambar: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80" });
+      triggerSuccess("Kegiatan & Berita sekolah berhasil diperbarui dan disinkronkan ke database Firestore!");
+    } else {
+      const item: NewsArticle = {
+        id: `NEWS-${Date.now()}`,
+        judul: newNews.judul,
+        tanggal: newNews.tanggal,
+        kategori: newNews.kategori,
+        penulis: newNews.penulis,
+        ringkasan: newNews.ringkasan,
+        konten: newNews.konten || newNews.ringkasan,
+        gambar: newNews.gambar
+      };
+      const updated = [item, ...newsList];
+      setNewsList(updated);
+      localStorage.setItem("mts_admin_news", JSON.stringify(updated));
+      try {
+        await setDoc(doc(db, "news", item.id), item);
+      } catch (err) {
+        handleFirestoreError(err, OperationType.CREATE, `news/${item.id}`);
+      }
+      setNewNews({ judul: "", kategori: "Kegiatan Sekolah", penulis: "Admin", tanggal: "16 September 2026", ringkasan: "", konten: "", gambar: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80" });
+      triggerSuccess("Kegiatan & Berita sekolah berhasil dipublikasikan dan disimpan permanen di database Firebase Firestore!");
+    }
   };
 
   const handleSaveProfile = (e: React.FormEvent) => {
@@ -826,7 +882,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
             <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
               <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-emerald-600" />
-                <span>Publikasikan Kegiatan Sekolah & Berita</span>
+                <span>{editingNewsId ? "Edit Kegiatan Sekolah & Berita" : "Publikasikan Kegiatan Sekolah & Berita"}</span>
               </h3>
               <form onSubmit={handleAddNews} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -852,6 +908,28 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
                     <option value="Pengumuman">Pengumuman</option>
                   </select>
                 </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Tanggal Kegiatan / Berita</label>
+                  <input
+                    type="text"
+                    required
+                    value={newNews.tanggal}
+                    onChange={(e) => setNewNews({...newNews, tanggal: e.target.value})}
+                    placeholder="Contoh: 16 September 2026"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Diposting Oleh (Penulis / Admin)</label>
+                  <input
+                    type="text"
+                    required
+                    value={newNews.penulis}
+                    onChange={(e) => setNewNews({...newNews, penulis: e.target.value})}
+                    placeholder="Contoh: Admin / Humas Sekolah"
+                    className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                  />
+                </div>
                 <div className="sm:col-span-2">
                   <label className="block text-xs font-bold text-slate-700 mb-1">Ringkasan / Sinopsis</label>
                   <textarea
@@ -864,20 +942,73 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
                   ></textarea>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-xs font-bold text-slate-700 mb-1">URL Gambar Dokumentasi Kegiatan</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Upload Gambar dari Perangkat atau URL</label>
                   <input
-                    type="url"
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        try {
+                          const compressedBase64 = await new Promise<string>((resolve) => {
+                            const reader = new FileReader();
+                            reader.onload = (event) => {
+                              const img = new Image();
+                              img.onload = () => {
+                                const canvas = document.createElement("canvas");
+                                let width = img.width;
+                                let height = img.height;
+                                const maxWidth = 800;
+                                if (width > maxWidth) {
+                                  height = Math.round((height * maxWidth) / width);
+                                  width = maxWidth;
+                                }
+                                canvas.width = width;
+                                canvas.height = height;
+                                const ctx = canvas.getContext("2d");
+                                ctx?.drawImage(img, 0, 0, width, height);
+                                resolve(canvas.toDataURL("image/jpeg", 0.75));
+                              };
+                              img.src = event.target?.result as string;
+                            };
+                            reader.readAsDataURL(file);
+                          });
+                          setNewNews({ ...newNews, gambar: compressedBase64 });
+                          triggerSuccess(`Gambar ${file.name} berhasil dikompresi dan diunggah dengan cepat!`);
+                        } catch (err) {
+                          triggerSuccess(`Gagal mengompresi gambar.`);
+                        }
+                      }
+                    }}
+                    className="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer border border-slate-200 rounded-xl p-1 bg-slate-50 mb-2"
+                  />
+                  <input
+                    type="text"
                     value={newNews.gambar}
                     onChange={(e) => setNewNews({...newNews, gambar: e.target.value})}
+                    placeholder="Atau masukkan URL gambar https://..."
                     className="w-full px-3.5 py-2 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
                   />
                 </div>
-                <div className="sm:col-span-2 flex justify-end">
+                <div className="sm:col-span-2 flex justify-end gap-3">
+                  {editingNewsId && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingNewsId(null);
+                        setNewNews({ judul: "", kategori: "Kegiatan Sekolah", penulis: "Admin", ringkasan: "", konten: "", gambar: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80" });
+                      }}
+                      className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-2.5 px-6 rounded-xl text-sm transition"
+                    >
+                      Batal
+                    </button>
+                  )}
                   <button
                     type="submit"
                     className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition flex items-center gap-2 shadow-sm"
                   >
-                    <Plus className="w-4 h-4" /> Publikasikan Kegiatan
+                    {editingNewsId ? <Edit3 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                    {editingNewsId ? "Simpan Perubahan" : "Publikasikan Kegiatan"}
                   </button>
                 </div>
               </form>
@@ -896,15 +1027,44 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
                         <p className="text-xs text-slate-500">{ns.tanggal} • Oleh {ns.penulis}</p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => {
-                        setNewsList(newsList.filter(n => n.id !== ns.id));
-                        triggerSuccess("Berita/kegiatan berhasil dihapus.");
-                      }}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setEditingNewsId(ns.id);
+                          setNewNews({
+                            judul: ns.judul,
+                            kategori: ns.kategori,
+                            penulis: ns.penulis || "Admin",
+                            tanggal: ns.tanggal || "16 September 2026",
+                            ringkasan: ns.ringkasan,
+                            konten: ns.konten,
+                            gambar: ns.gambar
+                          });
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                        title="Edit Berita"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const updated = newsList.filter(n => n.id !== ns.id);
+                          setNewsList(updated);
+                          localStorage.setItem("mts_admin_news", JSON.stringify(updated));
+                          try {
+                            await deleteDoc(doc(db, "news", ns.id));
+                          } catch (err) {
+                            handleFirestoreError(err, OperationType.DELETE, `news/${ns.id}`);
+                          }
+                          triggerSuccess("Berita/kegiatan berhasil dihapus dari database Firestore.");
+                        }}
+                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                        title="Hapus Berita"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

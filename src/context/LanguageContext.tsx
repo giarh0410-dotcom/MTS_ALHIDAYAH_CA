@@ -19,6 +19,7 @@ const translations: Translations = {
   struktur: { ID: "Struktur Organisasi", EN: "Organizational Structure" },
   agenda: { ID: "Agenda Sekolah", EN: "School Agenda" },
   pengumuman: { ID: "Pengumuman", EN: "Announcements" },
+  kegiatanBerita: { ID: "Kegiatan & Berita", EN: "Activities & News" },
   download: { ID: "Download", EN: "Download" },
   siswa: { ID: "Data Siswa", EN: "Student Data" },
   guru: { ID: "Data Guru", EN: "Teacher Data" },

@@ -2,13 +2,16 @@ import React, { useState } from "react";
 import { ChevronRight, Calendar, Download, Megaphone, Info, Building, FileText } from "lucide-react";
 import { SCHOOL_INFO } from "../data/mockData";
 import { AnimatedDotGrid, AnimatedArrow } from "./AnimatedDecorations";
+import { db } from "../lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 interface InfoSekolahViewProps {
   setCurrentTab: (tab: string) => void;
   subCategory?: "info_sekolah" | "agenda_sekolah" | "pengumuman" | "download";
+  currentLang?: string;
 }
 
-export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab, subCategory = "info_sekolah" }) => {
+export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab, subCategory = "info_sekolah", currentLang = "ID" }) => {
   const [activeSub, setActiveSub] = useState<string>(subCategory);
   const [customNews, setCustomNews] = useState<any[]>([]);
   const [orgStructure, setOrgStructure] = useState<Array<{ id: string; jabatan: string; nama: string }>>([
@@ -19,6 +22,19 @@ export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab,
     { id: "5", jabatan: "Bendahara Sekolah", nama: "Nurul Hidayah, S.E." },
     { id: "6", jabatan: "Sekretaris Madrasah", nama: "Fauzan Azim, S.Kom." },
   ]);
+
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return "";
+    let videoId = "";
+    if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1]?.split("?")[0];
+    } else if (url.includes("watch?v=")) {
+      videoId = url.split("watch?v=")[1]?.split("&")[0];
+    } else if (url.includes("embed/")) {
+      return url;
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+  };
 
   React.useEffect(() => {
     try {
@@ -31,6 +47,21 @@ export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab,
         setOrgStructure(JSON.parse(storedOrg));
       }
     } catch (e) {}
+
+    async function loadNews() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "news"));
+        if (!querySnapshot.empty) {
+          const list: any[] = [];
+          querySnapshot.forEach((docSnap) => {
+            list.push(docSnap.data());
+          });
+          setCustomNews(list);
+          localStorage.setItem("mts_admin_news", JSON.stringify(list));
+        }
+      } catch (e) {}
+    }
+    loadNews();
   }, []);
 
   const getHeaderInfo = () => {
@@ -253,7 +284,17 @@ export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab,
                     <div>
                       {news.gambar && (
                         <div className="h-48 overflow-hidden bg-slate-100">
-                          <img src={news.gambar} alt={news.judul} className="w-full h-full object-cover" />
+                          {news.gambar.includes("youtube.com") || news.gambar.includes("youtu.be") ? (
+                            <iframe
+                              src={getYouTubeEmbedUrl(news.gambar)}
+                              title={news.judul}
+                              className="w-full h-full border-0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            ></iframe>
+                          ) : (
+                            <img src={news.gambar} alt={news.judul} className="w-full h-full object-cover" />
+                          )}
                         </div>
                       )}
                       <div className="p-6 space-y-3">

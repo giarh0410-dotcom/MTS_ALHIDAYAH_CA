@@ -181,6 +181,15 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span>{t("pengumuman")}</span>
                   </button>
                   <button
+                    onClick={() => { setCurrentTab("info_kegiatan"); setInfoDropdown(false); }}
+                    className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-emerald-50/80 text-slate-700 hover:text-emerald-700 flex items-center gap-3 transition"
+                  >
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+                      <Award className="w-4 h-4" />
+                    </div>
+                    <span>{t("kegiatanBerita")}</span>
+                  </button>
+                  <button
                     onClick={() => { setCurrentTab("info_download"); setInfoDropdown(false); }}
                     className="w-full text-left px-4 py-2.5 text-xs font-semibold hover:bg-emerald-50/80 text-slate-700 hover:text-emerald-700 flex items-center gap-3 transition"
                   >
@@ -403,6 +412,12 @@ export const Navbar: React.FC<NavbarProps> = ({
                   className={`w-full text-left pl-4 pr-3 py-2 rounded-xl text-xs font-semibold transition ${currentTab === "info_pengumuman" ? "bg-emerald-50 text-emerald-700 font-bold" : "text-slate-700 hover:bg-slate-100"}`}
                 >
                   {t("pengumuman")}
+                </button>
+                <button
+                  onClick={() => { setCurrentTab("info_kegiatan"); setMobileMenuOpen(false); }}
+                  className={`w-full text-left pl-4 pr-3 py-2 rounded-xl text-xs font-semibold transition ${currentTab === "info_kegiatan" ? "bg-emerald-50 text-emerald-700 font-bold" : "text-slate-700 hover:bg-slate-100"}`}
+                >
+                  {t("kegiatanBerita")}
                 </button>
                 <button
                   onClick={() => { setCurrentTab("info_download"); setMobileMenuOpen(false); }}

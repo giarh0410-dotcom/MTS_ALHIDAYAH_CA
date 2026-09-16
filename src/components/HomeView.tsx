@@ -17,6 +17,9 @@ import {
 import { SCHOOL_INFO, MOCK_NEWS, MOCK_GALLERY } from "../data/mockData";
 import { YayasanLogo } from "./YayasanLogo";
 import { AnimatedDotGrid, AnimatedArrow } from "./AnimatedDecorations";
+import { db } from "../lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
+
 
 interface HomeViewProps {
   setCurrentTab: (tab: string) => void;
@@ -72,8 +75,49 @@ const HERO_SLIDES_EN = [
 export const HomeView: React.FC<HomeViewProps> = ({ setCurrentTab, currentLang = "ID" }) => {
   const HERO_SLIDES = currentLang === "EN" ? HERO_SLIDES_EN : HERO_SLIDES_ID;
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [newsList, setNewsList] = useState<any[]>(MOCK_NEWS);
+
+  const getYouTubeEmbedUrl = (url: string) => {
+    if (!url) return "";
+    let videoId = "";
+    if (url.includes("youtu.be/")) {
+      videoId = url.split("youtu.be/")[1]?.split("?")[0];
+    } else if (url.includes("watch?v=")) {
+      videoId = url.split("watch?v=")[1]?.split("&")[0];
+    } else if (url.includes("embed/")) {
+      return url;
+    }
+    return videoId ? `https://www.youtube.com/embed/${videoId}` : "";
+  };
 
   useEffect(() => {
+    try {
+      const stored = localStorage.getItem("mts_admin_news");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setNewsList(parsed);
+        }
+      }
+    } catch (e) {}
+
+    async function loadNews() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "news"));
+        if (!querySnapshot.empty) {
+          const list: any[] = [];
+          querySnapshot.forEach((docSnap) => {
+            list.push(docSnap.data());
+          });
+          if (list.length > 0) {
+            setNewsList(list);
+            localStorage.setItem("mts_admin_news", JSON.stringify(list));
+          }
+        }
+      } catch (e) {}
+    }
+    loadNews();
+
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % HERO_SLIDES.length);
     }, 5000);
@@ -315,14 +359,24 @@ export const HomeView: React.FC<HomeViewProps> = ({ setCurrentTab, currentLang =
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {MOCK_NEWS.map((item) => (
+          {newsList.map((item) => (
             <div key={item.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition flex flex-col">
-              <div className="h-48 overflow-hidden relative">
-                <img
-                  src={item.gambar}
-                  alt={item.judul}
-                  className="w-full h-full object-cover hover:scale-105 transition duration-500"
-                />
+              <div className="h-48 overflow-hidden relative bg-slate-100">
+                {item.gambar && (item.gambar.includes("youtube.com") || item.gambar.includes("youtu.be")) ? (
+                  <iframe
+                    src={getYouTubeEmbedUrl(item.gambar)}
+                    title={item.judul}
+                    className="w-full h-full border-0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                ) : (
+                  <img
+                    src={item.gambar || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"}
+                    alt={item.judul}
+                    className="w-full h-full object-cover hover:scale-105 transition duration-500"
+                  />
+                )}
                 <span className="absolute top-3 left-3 bg-emerald-600 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg shadow-sm">
                   {currentLang === "EN" 
                     ? (item.kategori === "Prestasi" ? "Achievement" : item.kategori === "Pengumuman" ? "Announcement" : "Student Activity")
@@ -343,7 +397,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ setCurrentTab, currentLang =
                   </p>
                 </div>
                 <button
-                  onClick={() => setCurrentTab("news")}
+                  onClick={() => setCurrentTab("info_kegiatan")}
                   className="text-xs font-semibold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 pt-2"
                 >
                   <span>{currentLang === "EN" ? "Read More" : "Baca Selengkapnya"}</span>

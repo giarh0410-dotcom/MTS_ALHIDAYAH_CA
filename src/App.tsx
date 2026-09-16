@@ -55,6 +55,7 @@ export default function App() {
           {currentTab === "info_sekolah" && <InfoSekolahView setCurrentTab={setCurrentTab} subCategory="info_sekolah" currentLang={currentLang} />}
           {currentTab === "info_agenda" && <InfoSekolahView setCurrentTab={setCurrentTab} subCategory="agenda_sekolah" currentLang={currentLang} />}
           {currentTab === "info_pengumuman" && <InfoSekolahView setCurrentTab={setCurrentTab} subCategory="info_pengumuman" currentLang={currentLang} />}
+          {currentTab === "info_kegiatan" && <InfoSekolahView setCurrentTab={setCurrentTab} subCategory="kegiatan_berita" currentLang={currentLang} />}
           {currentTab === "info_download" && <InfoSekolahView setCurrentTab={setCurrentTab} subCategory="download" currentLang={currentLang} />}
         </main>
 
