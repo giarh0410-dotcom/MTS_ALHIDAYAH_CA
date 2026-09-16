@@ -99,6 +99,29 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
       }
 
       try {
+        const mediaSnap = await getDocs(collection(db, "media"));
+        if (!mediaSnap.empty) {
+          const list: any[] = [];
+          mediaSnap.forEach((docSnap) => {
+            list.push(docSnap.data());
+          });
+          setMediaList(list);
+        } else {
+          const storedMedia = localStorage.getItem("mts_admin_media");
+          if (storedMedia) {
+            setMediaList(JSON.parse(storedMedia));
+          }
+        }
+      } catch (e) {
+        try {
+          const storedMedia = localStorage.getItem("mts_admin_media");
+          if (storedMedia) {
+            setMediaList(JSON.parse(storedMedia));
+          }
+        } catch (err) {}
+      }
+
+      try {
         const storedOrg = localStorage.getItem("mts_admin_org");
         if (storedOrg) {
           setOrgStructure(JSON.parse(storedOrg));
@@ -206,7 +229,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
     triggerSuccess("Data alumni berhasil ditambahkan ke database!");
   };
 
-  const handleAddMedia = (e: React.FormEvent) => {
+  const handleAddMedia = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMedia.title || !newMedia.url) return;
     const item = {
@@ -219,22 +242,47 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
     const updated = [item, ...mediaList];
     setMediaList(updated);
     localStorage.setItem("mts_admin_media", JSON.stringify(updated));
+    try {
+      await setDoc(doc(db, "media", item.id), item);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, `media/${item.id}`);
+    }
     setNewMedia({ title: "", type: "image", url: "" });
-    triggerSuccess("Media foto/video berhasil diunggah dan otomatis masuk ke menu Galeri!");
+    triggerSuccess("Media foto/video berhasil diunggah dan disimpan permanen ke database Firestore!");
   };
 
   const handleFileSelection = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const url = URL.createObjectURL(file);
-      const type = file.type.includes("video") ? "video" : "image";
-      setNewMedia({
-        ...newMedia,
-        title: newMedia.title || file.name.replace(/\.[^/.]+$/, ""),
-        type,
-        url
-      });
-      triggerSuccess(`File ${file.name} berhasil dipilih dan siap diunggah!`);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement("canvas");
+          let width = img.width;
+          let height = img.height;
+          const maxWidth = 800;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          ctx?.drawImage(img, 0, 0, width, height);
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.75);
+          const type = file.type.includes("video") ? "video" : "image";
+          setNewMedia({
+            ...newMedia,
+            title: newMedia.title || file.name.replace(/\.[^/.]+$/, ""),
+            type,
+            url: compressedBase64
+          });
+          triggerSuccess(`File ${file.name} berhasil dikompresi dan siap diunggah ke database!`);
+        };
+        img.src = event.target?.result as string;
+      };
+      reader.readAsDataURL(file);
     }
   };
 

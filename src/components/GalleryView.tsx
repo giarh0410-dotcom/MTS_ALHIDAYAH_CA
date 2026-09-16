@@ -3,6 +3,8 @@ import { MOCK_GALLERY } from "../data/mockData";
 import { GalleryItem } from "../types";
 import { Folder, Image as ImageIcon, ChevronRight, X } from "lucide-react";
 import { AnimatedDotGrid, AnimatedArrow } from "./AnimatedDecorations";
+import { db } from "../lib/firebase";
+import { collection, getDocs } from "firebase/firestore";
 
 interface GalleryViewProps {
   setCurrentTab: (tab: string) => void;
@@ -19,6 +21,21 @@ export const GalleryView: React.FC<GalleryViewProps> = ({ setCurrentTab }) => {
         setCustomMedia(JSON.parse(stored));
       }
     } catch (e) {}
+
+    async function loadMedia() {
+      try {
+        const mediaSnap = await getDocs(collection(db, "media"));
+        if (!mediaSnap.empty) {
+          const list: any[] = [];
+          mediaSnap.forEach((docSnap) => {
+            list.push(docSnap.data());
+          });
+          setCustomMedia(list);
+          localStorage.setItem("mts_admin_media", JSON.stringify(list));
+        }
+      } catch (e) {}
+    }
+    loadMedia();
   }, []);
 
   // Group or display album cards matching the screenshot style
