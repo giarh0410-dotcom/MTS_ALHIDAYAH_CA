@@ -1,0 +1,81 @@
+{
+  "entities": {
+    "Student": {
+      "title": "Student",
+      "description": "Student directory records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nisn": { "type": "string" },
+        "namaLengkap": { "type": "string" },
+        "kelas": { "type": "string" },
+        "jurusan": { "type": "string" },
+        "waliKelas": { "type": "string" },
+        "foto": { "type": "string" },
+        "statusPembayaran": { "type": "string" }
+      },
+      "required": ["id", "namaLengkap", "nisn"]
+    },
+    "NewsArticle": {
+      "title": "News Article",
+      "description": "School news and announcements",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "judul": { "type": "string", "maxLength": 200 },
+        "kategori": { "type": "string" },
+        "tanggal": { "type": "string" },
+        "penulis": { "type": "string" },
+        "ringkasan": { "type": "string", "maxLength": 500 },
+        "isi": { "type": "string" },
+        "gambar": { "type": "string" }
+      },
+      "required": ["id", "judul", "kategori", "tanggal"]
+    },
+    "MediaItem": {
+      "title": "Media Item",
+      "description": "Gallery photos and videos",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "judul": { "type": "string" },
+        "kategori": { "type": "string" },
+        "tipe": { "type": "string" },
+        "url": { "type": "string" },
+        "tanggal": { "type": "string" }
+      },
+      "required": ["id", "judul", "url"]
+    },
+    "Alumni": {
+      "title": "Alumni",
+      "description": "Alumni directory records",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "nama": { "type": "string" },
+        "tahunLulus": { "type": "string" },
+        "profesi": { "type": "string" },
+        "testimoni": { "type": "string" }
+      },
+      "required": ["id", "nama", "tahunLulus"]
+    }
+  },
+  "firestore": {
+    "/students/{studentId}": {
+      "schema": { "$ref": "Student" },
+      "description": "Student collection"
+    },
+    "/news/{newsId}": {
+      "schema": { "$ref": "NewsArticle" },
+      "description": "School news collection"
+    },
+    "/media/{mediaId}": {
+      "schema": { "$ref": "MediaItem" },
+      "description": "School gallery media collection"
+    },
+    "/alumni/{alumniId}": {
+      "schema": { "$ref": "Alumni" },
+      "description": "Alumni directory collection"
+    }
+  }
+}

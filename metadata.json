@@ -1,0 +1,6 @@
+{
+  "name": "SMA Nusantara Madani - Portal Sekolah & PPDB Digital",
+  "description": "Website sekolah modern lengkap dengan portal orang tua, sistem PPDB online interaktif, dan integrasi pembayaran digital sekolah.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
