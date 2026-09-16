@@ -375,6 +375,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ setCurrentTab, currentLang =
                     src={item.gambar || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"}
                     alt={item.judul}
                     className="w-full h-full object-cover hover:scale-105 transition duration-500"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
+                    }}
                   />
                 )}
                 <span className="absolute top-3 left-3 bg-emerald-600 text-white text-[11px] font-semibold px-2.5 py-1 rounded-lg shadow-sm">

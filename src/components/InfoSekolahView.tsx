@@ -282,21 +282,26 @@ export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab,
                 {customNews.map((news) => (
                   <div key={news.id} className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-xs hover:shadow-lg transition flex flex-col justify-between">
                     <div>
-                      {news.gambar && (
-                        <div className="h-48 overflow-hidden bg-slate-100">
-                          {news.gambar.includes("youtube.com") || news.gambar.includes("youtu.be") ? (
-                            <iframe
-                              src={getYouTubeEmbedUrl(news.gambar)}
-                              title={news.judul}
-                              className="w-full h-full border-0"
-                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                              allowFullScreen
-                            ></iframe>
-                          ) : (
-                            <img src={news.gambar} alt={news.judul} className="w-full h-full object-cover" />
-                          )}
-                        </div>
-                      )}
+                      <div className="h-48 overflow-hidden bg-slate-100">
+                        {news.gambar && (news.gambar.includes("youtube.com") || news.gambar.includes("youtu.be")) ? (
+                          <iframe
+                            src={getYouTubeEmbedUrl(news.gambar)}
+                            title={news.judul}
+                            className="w-full h-full border-0"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowFullScreen
+                          ></iframe>
+                        ) : (
+                          <img
+                            src={news.gambar || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"}
+                            alt={news.judul}
+                            className="w-full h-full object-cover hover:scale-105 transition duration-500"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
+                            }}
+                          />
+                        )}
+                      </div>
                       <div className="p-6 space-y-3">
                         <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full inline-block">
                           {news.kategori}
