@@ -15,7 +15,18 @@ export const DatabaseView: React.FC<DatabaseViewProps> = ({ setCurrentTab, subCa
   const [activeSub, setActiveSub] = useState<"siswa" | "guru" | "alumni">(subCategory);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedClass, setSelectedClass] = useState("Semua Kelas");
-  const [students, setStudents] = useState<StudentProfile[]>(SAMPLE_STUDENTS);
+  const [students, setStudents] = useState<StudentProfile[]>(() => {
+    try {
+      const stored = localStorage.getItem("mts_admin_students");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch (e) {}
+    return SAMPLE_STUDENTS;
+  });
 
   useEffect(() => {
     async function fetchStudents() {
@@ -34,7 +45,10 @@ export const DatabaseView: React.FC<DatabaseViewProps> = ({ setCurrentTab, subCa
       try {
         const stored = localStorage.getItem("mts_admin_students");
         if (stored) {
-          setStudents(JSON.parse(stored));
+          const parsed = JSON.parse(stored);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setStudents(parsed);
+          }
         }
       } catch (e) {}
     }

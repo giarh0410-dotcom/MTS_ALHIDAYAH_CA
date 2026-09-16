@@ -135,7 +135,16 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
       poinPelanggaran: 0,
       statusPembayaran: newStudent.statusPembayaran as any
     };
-    const updated = [item, ...students];
+    
+    let currentList = students;
+    try {
+      const stored = localStorage.getItem("mts_admin_students");
+      if (stored) {
+        currentList = JSON.parse(stored);
+      }
+    } catch (e) {}
+
+    const updated = [item, ...currentList];
     setStudents(updated);
     try {
       localStorage.setItem("mts_admin_students", JSON.stringify(updated));
