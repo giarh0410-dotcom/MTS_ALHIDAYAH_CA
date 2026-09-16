@@ -96,7 +96,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ setCurrentTab, currentLang =
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          setNewsList(parsed);
+          const sanitized = parsed.map((item: any) => ({
+            ...item,
+            gambar: item.gambar && item.gambar.trim() !== "" ? item.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+          }));
+          setNewsList(sanitized);
         }
       }
     } catch (e) {}
@@ -107,7 +111,11 @@ export const HomeView: React.FC<HomeViewProps> = ({ setCurrentTab, currentLang =
         if (!querySnapshot.empty) {
           const list: any[] = [];
           querySnapshot.forEach((docSnap) => {
-            list.push(docSnap.data());
+            const data = docSnap.data();
+            list.push({
+              ...data,
+              gambar: data.gambar && data.gambar.trim() !== "" ? data.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+            });
           });
           if (list.length > 0) {
             setNewsList(list);

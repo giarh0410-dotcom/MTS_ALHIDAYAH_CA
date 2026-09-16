@@ -313,6 +313,10 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
     e.preventDefault();
     if (!newNews.judul || !newNews.ringkasan) return;
     
+    const finalGambar = newNews.gambar && newNews.gambar.trim() !== "" 
+      ? newNews.gambar 
+      : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
+
     if (editingNewsId) {
       const updated = newsList.map(item => item.id === editingNewsId ? {
         ...item,
@@ -322,7 +326,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
         penulis: newNews.penulis,
         ringkasan: newNews.ringkasan,
         konten: newNews.konten || newNews.ringkasan,
-        gambar: newNews.gambar
+        gambar: finalGambar
       } : item);
       setNewsList(updated);
       localStorage.setItem("mts_admin_news", JSON.stringify(updated));
@@ -346,7 +350,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
         penulis: newNews.penulis,
         ringkasan: newNews.ringkasan,
         konten: newNews.konten || newNews.ringkasan,
-        gambar: newNews.gambar
+        gambar: finalGambar
       };
       const updated = [item, ...newsList];
       setNewsList(updated);

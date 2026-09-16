@@ -40,7 +40,14 @@ export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab,
     try {
       const storedNews = localStorage.getItem("mts_admin_news");
       if (storedNews) {
-        setCustomNews(JSON.parse(storedNews));
+        const parsed = JSON.parse(storedNews);
+        if (Array.isArray(parsed)) {
+          const sanitized = parsed.map((item: any) => ({
+            ...item,
+            gambar: item.gambar && item.gambar.trim() !== "" ? item.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+          }));
+          setCustomNews(sanitized);
+        }
       }
       const storedOrg = localStorage.getItem("mts_admin_org");
       if (storedOrg) {
@@ -54,7 +61,11 @@ export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab,
         if (!querySnapshot.empty) {
           const list: any[] = [];
           querySnapshot.forEach((docSnap) => {
-            list.push(docSnap.data());
+            const data = docSnap.data();
+            list.push({
+              ...data,
+              gambar: data.gambar && data.gambar.trim() !== "" ? data.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+            });
           });
           setCustomNews(list);
           localStorage.setItem("mts_admin_news", JSON.stringify(list));
