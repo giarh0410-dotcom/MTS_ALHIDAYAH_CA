@@ -27,7 +27,10 @@ export const NewsView: React.FC = () => {
               <img
                 src={item.gambar}
                 alt={item.judul}
-                className="w-full h-full object-cover hover:scale-105 transition duration-500"
+                className="w-full h-full object-cover hover:scale-105 transition duration-500 bg-slate-100"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
+                }}
               />
               <span className="absolute top-4 left-4 bg-emerald-600 text-white text-xs font-semibold px-3 py-1 rounded-xl shadow-sm">
                 {item.kategori}
@@ -82,8 +85,15 @@ export const NewsView: React.FC = () => {
               </button>
             </div>
 
-            <div className="rounded-2xl overflow-hidden h-64">
-              <img src={selectedArticle.gambar} alt={selectedArticle.judul} className="w-full h-full object-cover" />
+            <div className="rounded-2xl overflow-hidden h-64 bg-slate-100">
+              <img 
+                src={selectedArticle.gambar} 
+                alt={selectedArticle.judul} 
+                className="w-full h-full object-cover" 
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
+                }}
+              />
             </div>
 
             <div className="text-slate-700 text-sm sm:text-base leading-relaxed space-y-4">

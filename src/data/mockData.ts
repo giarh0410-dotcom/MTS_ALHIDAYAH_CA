@@ -111,7 +111,7 @@ export const MOCK_NEWS: NewsArticle[] = [
     penulis: "Tim Redaksi Humas",
     ringkasan: "Siswa-siswi MTS Al Hidayah CA kembali menorehkan prestasi membanggakan di kancah nasional dalam bidang Fisika dan Matematika.",
     konten: "Depok — MTS Al Hidayah CA kembali mengharumkan nama sekolah setelah delegasi siswa berhasil memborong 2 medali emas dan 1 perak dalam ajang Olimpiade Sains Nasional (OSN) 2026 yang diselenggarakan di Bandung. Kepala Sekolah Dr. H. M. Sutisna, M.Pd. menyampaikan rasa syukur dan apresiasi mendalam atas kerja keras para siswa dan guru pembimbing.",
-    gambar: "/images/prestasi-olimpiade.jpg"
+    gambar: "https://images.unsplash.com/photo-1567168544813-cc03465b4fa8?w=800&auto=format&fit=crop&q=80"
   },
   {
     id: "news-2",
@@ -121,7 +121,7 @@ export const MOCK_NEWS: NewsArticle[] = [
     penulis: "Panitia PPDB",
     ringkasan: "Pendaftaran siswa baru jalur prestasi, reguler, dan zonasi kini dapat dilakukan secara online melalui portal interaktif sekolah.",
     konten: "MTS Al Hidayah CA membuka kesempatan luas bagi lulusan SMP/MTs sederajat untuk bergabung menjadi bagian dari komunitas akademik unggul. Pendaftaran dilakukan secara full online dengan sistem verifikasi berkas digital dan tes seleksi berbasis komputer.",
-    gambar: "/images/ppdb-2026.jpg"
+    gambar: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=800&auto=format&fit=crop&q=80"
   },
   {
     id: "news-3",
@@ -131,7 +131,7 @@ export const MOCK_NEWS: NewsArticle[] = [
     penulis: "Admin",
     ringkasan: "Kegiatan rutin tahunan hari kartini dengan diadakan upacara dan pawai",
     konten: "Peringatan Hari Kartini 2026 di lingkungan MTS Al Hidayah CA berlangsung meriah dengan upacara adat Nusantara, lomba busana daerah, serta pembacaan puisi pahlawan nasional. Seluruh siswa dan guru mengenakan pakaian adat tradisional dengan penuh semangat kebersamaan.",
-    gambar: "/images/hari-kartini-2026.jpg"
+    gambar: "https://images.unsplash.com/photo-1544717305-2782549b5136?w=800&auto=format&fit=crop&q=80"
   }
 ];
 
