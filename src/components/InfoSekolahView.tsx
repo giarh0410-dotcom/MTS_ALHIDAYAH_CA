@@ -293,7 +293,7 @@ export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab,
                           ></iframe>
                         ) : (
                           <img
-                            src={news.gambar || "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"}
+                            src={news.gambar && news.gambar.trim() !== "" ? news.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"}
                             alt={news.judul}
                             className="w-full h-full object-cover hover:scale-105 transition duration-500"
                             onError={(e) => {
