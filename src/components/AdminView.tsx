@@ -80,22 +80,42 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
         if (!newsSnap.empty) {
           const list: NewsArticle[] = [];
           newsSnap.forEach((docSnap) => {
-            list.push(docSnap.data() as NewsArticle);
+            const data = docSnap.data() as NewsArticle;
+            list.push({
+              ...data,
+              gambar: data.gambar && data.gambar.trim() !== "" ? data.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+            });
           });
           setNewsList(list);
         } else {
           const storedNews = localStorage.getItem("mts_admin_news");
           if (storedNews) {
-            setNewsList(JSON.parse(storedNews));
+            const parsed = JSON.parse(storedNews);
+            const sanitized = parsed.map((item: any) => ({
+              ...item,
+              gambar: item.gambar && item.gambar.trim() !== "" ? item.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+            }));
+            setNewsList(sanitized);
+          } else {
+            setNewsList(MOCK_NEWS);
           }
         }
       } catch (e) {
         try {
           const storedNews = localStorage.getItem("mts_admin_news");
           if (storedNews) {
-            setNewsList(JSON.parse(storedNews));
+            const parsed = JSON.parse(storedNews);
+            const sanitized = parsed.map((item: any) => ({
+              ...item,
+              gambar: item.gambar && item.gambar.trim() !== "" ? item.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+            }));
+            setNewsList(sanitized);
+          } else {
+            setNewsList(MOCK_NEWS);
           }
-        } catch (err) {}
+        } catch (err) {
+          setNewsList(MOCK_NEWS);
+        }
       }
 
       try {
