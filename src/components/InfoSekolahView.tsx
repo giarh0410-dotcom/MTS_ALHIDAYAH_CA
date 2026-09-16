@@ -44,7 +44,9 @@ export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab,
         if (Array.isArray(parsed)) {
           const sanitized = parsed.map((item: any) => ({
             ...item,
-            gambar: item.gambar && item.gambar.trim() !== "" ? item.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+            gambar: item.gambar && item.gambar.trim() !== "" && !item.gambar.startsWith("/images/")
+              ? item.gambar
+              : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
           }));
           setCustomNews(sanitized);
         }
@@ -62,9 +64,12 @@ export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab,
           const list: any[] = [];
           querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
+            const validImg = data.gambar && data.gambar.trim() !== "" && !data.gambar.startsWith("/images/")
+              ? data.gambar
+              : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
             list.push({
               ...data,
-              gambar: data.gambar && data.gambar.trim() !== "" ? data.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+              gambar: validImg
             });
           });
           setCustomNews(list);
@@ -304,7 +309,7 @@ export const InfoSekolahView: React.FC<InfoSekolahViewProps> = ({ setCurrentTab,
                           ></iframe>
                         ) : (
                           <img
-                            src={news.gambar && news.gambar.trim() !== "" ? news.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"}
+                            src={news.gambar && news.gambar.trim() !== "" && !news.gambar.startsWith("/images/") ? news.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"}
                             alt={news.judul}
                             className="w-full h-full object-cover hover:scale-105 transition duration-500"
                             onError={(e) => {

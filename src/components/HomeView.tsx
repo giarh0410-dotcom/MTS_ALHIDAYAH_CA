@@ -98,7 +98,9 @@ export const HomeView: React.FC<HomeViewProps> = ({ setCurrentTab, currentLang =
         if (Array.isArray(parsed) && parsed.length > 0) {
           const sanitized = parsed.map((item: any) => ({
             ...item,
-            gambar: item.gambar && item.gambar.trim() !== "" ? item.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+            gambar: item.gambar && item.gambar.trim() !== "" && !item.gambar.startsWith("/images/") 
+              ? item.gambar 
+              : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
           }));
           setNewsList(sanitized);
         }
@@ -112,9 +114,12 @@ export const HomeView: React.FC<HomeViewProps> = ({ setCurrentTab, currentLang =
           const list: any[] = [];
           querySnapshot.forEach((docSnap) => {
             const data = docSnap.data();
+            const validImg = data.gambar && data.gambar.trim() !== "" && !data.gambar.startsWith("/images/")
+              ? data.gambar
+              : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
             list.push({
               ...data,
-              gambar: data.gambar && data.gambar.trim() !== "" ? data.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+              gambar: validImg
             });
           });
           if (list.length > 0) {
@@ -380,7 +385,7 @@ export const HomeView: React.FC<HomeViewProps> = ({ setCurrentTab, currentLang =
                   ></iframe>
                 ) : (
                   <img
-                    src={item.gambar && item.gambar.trim() !== "" ? item.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"}
+                    src={item.gambar && item.gambar.trim() !== "" && !item.gambar.startsWith("/images/") ? item.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"}
                     alt={item.judul}
                     className="w-full h-full object-cover hover:scale-105 transition duration-500"
                     onError={(e) => {
