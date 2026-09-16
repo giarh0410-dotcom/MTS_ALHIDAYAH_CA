@@ -193,7 +193,9 @@ export const ContactView: React.FC<ContactViewProps> = ({ currentLang = "ID" }) 
                 <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
                 <h3 className="font-bold text-slate-900 text-lg">{currentLang === "EN" ? "Message Successfully Sent!" : "Pesan Berhasil Terkirim!"}</h3>
                 <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto">
-                  {currentLang === "EN" ? `Thank you for contacting ${SCHOOL_INFO.name}. Our admin team will respond to your message shortly via email.` : `Terima kasih telah menghubungi ${SCHOOL_INFO.name}. Tim admin kami akan segera merespons pesan Anda melalui email.`}
+                  {currentLang === "EN" 
+                    ? `Thank you for contacting ${SCHOOL_INFO.name}. Your message has been routed to the official admin email: ${getSchoolEmail()}.` 
+                    : `Terima kasih telah menghubungi ${SCHOOL_INFO.name}. Pesan Anda telah diteruskan ke email resmi madrasah: ${getSchoolEmail()}.`}
                 </p>
                 <button
                   onClick={() => { setSubmitted(false); setFormData({ kategori: "", nama: "", email: "", telepon: "", subjek: "", pesan: "", captcha: "" }); }}
