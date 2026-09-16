@@ -81,9 +81,13 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
           const list: NewsArticle[] = [];
           newsSnap.forEach((docSnap) => {
             const data = docSnap.data() as NewsArticle;
+            let img = data.gambar;
+            if (!img || img.trim() === "" || img.startsWith("/images/")) {
+              img = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
+            }
             list.push({
               ...data,
-              gambar: data.gambar && data.gambar.trim() !== "" ? data.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
+              gambar: img
             });
           });
           setNewsList(list);
@@ -91,10 +95,16 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
           const storedNews = localStorage.getItem("mts_admin_news");
           if (storedNews) {
             const parsed = JSON.parse(storedNews);
-            const sanitized = parsed.map((item: any) => ({
-              ...item,
-              gambar: item.gambar && item.gambar.trim() !== "" ? item.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
-            }));
+            const sanitized = parsed.map((item: any) => {
+              let img = item.gambar;
+              if (!img || img.trim() === "" || img.startsWith("/images/")) {
+                img = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
+              }
+              return {
+                ...item,
+                gambar: img
+              };
+            });
             setNewsList(sanitized);
           } else {
             setNewsList(MOCK_NEWS);
@@ -105,10 +115,16 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
           const storedNews = localStorage.getItem("mts_admin_news");
           if (storedNews) {
             const parsed = JSON.parse(storedNews);
-            const sanitized = parsed.map((item: any) => ({
-              ...item,
-              gambar: item.gambar && item.gambar.trim() !== "" ? item.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"
-            }));
+            const sanitized = parsed.map((item: any) => {
+              let img = item.gambar;
+              if (!img || img.trim() === "" || img.startsWith("/images/")) {
+                img = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
+              }
+              return {
+                ...item,
+                gambar: img
+              };
+            });
             setNewsList(sanitized);
           } else {
             setNewsList(MOCK_NEWS);
