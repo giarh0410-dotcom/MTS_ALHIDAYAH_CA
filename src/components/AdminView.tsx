@@ -56,6 +56,13 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
   useEffect(() => {
     async function loadData() {
       try {
+        const storedProfile = localStorage.getItem("mts_admin_school_profile");
+        if (storedProfile) {
+          setSchoolProfile(JSON.parse(storedProfile));
+        }
+      } catch (e) {}
+
+      try {
         const querySnapshot = await getDocs(collection(db, "students"));
         if (!querySnapshot.empty) {
           const list: StudentProfile[] = [];
@@ -417,9 +424,14 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
     }
   };
 
-  const handleSaveProfile = (e: React.FormEvent) => {
+  const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    triggerSuccess("Profil dan informasi sekolah berhasil diperbarui!");
+    try {
+      localStorage.setItem("mts_admin_school_profile", JSON.stringify(schoolProfile));
+      await setDoc(doc(db, "settings", "profile"), schoolProfile);
+    } catch (err) {}
+    window.dispatchEvent(new Event("storage"));
+    triggerSuccess("Profil dan informasi sekolah berhasil disimpan dan diperbarui ke seluruh halaman website!");
   };
 
   return (

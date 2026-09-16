@@ -1,6 +1,6 @@
 import { StudentProfile, GradeItem, AttendanceItem, ScheduleItem, TeacherNote, NewsArticle, GalleryItem } from "../types";
 
-export const SCHOOL_INFO = {
+export const SCHOOL_INFO = new Proxy({
   name: "MTS Al Hidayah CA",
   tagline: "Membangun Generasi Unggul, Berkarakter, dan Berwawasan Global",
   address: "Jl. Cagar Alam, Pancoran Mas, Kota Depok",
@@ -9,7 +9,20 @@ export const SCHOOL_INFO = {
   accreditation: "Terakreditasi A (Unggul)",
   principal: "Saepul, S.Pd.",
   foundedYear: 2023,
-};
+}, {
+  get(target, prop) {
+    try {
+      const stored = localStorage.getItem("mts_admin_school_profile");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (prop in parsed && parsed[prop] !== undefined && parsed[prop] !== "") {
+          return parsed[prop];
+        }
+      }
+    } catch (e) {}
+    return (target as any)[prop];
+  }
+});
 
 export const SAMPLE_STUDENTS: StudentProfile[] = [
   {

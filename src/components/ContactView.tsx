@@ -10,6 +10,8 @@ import {
 } from "lucide-react";
 import { SCHOOL_INFO } from "../data/mockData";
 import { AnimatedDotGrid, AnimatedArrow } from "./AnimatedDecorations";
+import { db } from "../lib/firebase";
+import { collection, addDoc } from "firebase/firestore";
 
 interface ContactViewProps {
   currentLang?: string;
@@ -27,12 +29,51 @@ export const ContactView: React.FC<ContactViewProps> = ({ currentLang = "ID" }) 
   });
   const [submitted, setSubmitted] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const getSchoolEmail = () => {
+    try {
+      const stored = localStorage.getItem("mts_admin_school_profile");
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.email && parsed.email.trim() !== "") {
+          return parsed.email;
+        }
+      }
+    } catch (e) {}
+    return SCHOOL_INFO.email;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.nama || !formData.email || !formData.pesan) {
       alert(currentLang === "EN" ? "Please fill in the required fields." : "Mohon lengkapi data yang diperlukan.");
       return;
     }
+
+    const messagePayload = {
+      id: `MSG-${Date.now()}`,
+      ...formData,
+      tanggal: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+      status: "Belum Dibaca"
+    };
+
+    try {
+      const existing = localStorage.getItem("mts_admin_messages");
+      const list = existing ? JSON.parse(existing) : [];
+      localStorage.setItem("mts_admin_messages", JSON.stringify([messagePayload, ...list]));
+    } catch (err) {}
+
+    try {
+      await addDoc(collection(db, "messages"), {
+        ...messagePayload,
+        createdAt: new Date().toISOString()
+      });
+    } catch (err) {}
+
+    const schoolEmail = getSchoolEmail();
+    const mailtoSubject = encodeURIComponent(`[${formData.kategori || "Umum"}] ${formData.subjek || "Pesan dari Portal Website"}`);
+    const mailtoBody = encodeURIComponent(`Nama Pengirim: ${formData.nama}\nEmail: ${formData.email}\nTelepon: ${formData.telepon || "-"}\nKategori: ${formData.kategori}\n\nPesan:\n${formData.pesan}`);
+    window.open(`mailto:${schoolEmail}?subject=${mailtoSubject}&body=${mailtoBody}`, "_blank");
+
     setSubmitted(true);
   };
 
@@ -93,7 +134,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ currentLang = "ID" }) 
                 </div>
                 <div>
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Email</span>
-                  <p className="text-slate-800 font-medium mt-0.5">{SCHOOL_INFO.email}</p>
+                  <p className="text-slate-800 font-medium mt-0.5">{getSchoolEmail()}</p>
                 </div>
               </div>
 
