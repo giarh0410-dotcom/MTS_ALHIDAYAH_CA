@@ -229,6 +229,29 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
     triggerSuccess("Data alumni berhasil ditambahkan ke database!");
   };
 
+  const handleSeedDatabase = async () => {
+    try {
+      for (const item of newsList) {
+        await setDoc(doc(db, "news", item.id), item);
+      }
+      for (const item of mediaList) {
+        await setDoc(doc(db, "media", item.id), item);
+      }
+      for (const item of students) {
+        await setDoc(doc(db, "students", item.id), item);
+      }
+      for (const item of alumniList) {
+        await setDoc(doc(db, "alumni", item.id), item);
+      }
+      for (const item of orgStructure) {
+        await setDoc(doc(db, "org", item.id), item);
+      }
+      triggerSuccess("Struktur database Firestore berhasil dibentuk dan seluruh data tersusun rapi!");
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, "seed-database");
+    }
+  };
+
   const handleAddMedia = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMedia.title || !newMedia.url) return;
@@ -411,12 +434,20 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
           </p>
         </div>
         <div className="flex flex-col items-center md:items-end gap-3 shrink-0">
-          <button
-            onClick={() => setIsAdminLoggedIn(false)}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm"
-          >
-            🔒 Keluar (Logout)
-          </button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <button
+              onClick={handleSeedDatabase}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow-md"
+            >
+              🚀 Susun Struktur Database Firestore
+            </button>
+            <button
+              onClick={() => setIsAdminLoggedIn(false)}
+              className="bg-red-600 hover:bg-red-700 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition flex items-center gap-1.5 shadow-sm"
+            >
+              🔒 Keluar (Logout)
+            </button>
+          </div>
           <div className="flex items-center gap-4">
             <AnimatedDotGrid />
             <AnimatedArrow />
