@@ -111,7 +111,7 @@ export const MOCK_NEWS: NewsArticle[] = [
     penulis: "Tim Redaksi Humas",
     ringkasan: "Siswa-siswi MTS Al Hidayah CA kembali menorehkan prestasi membanggakan di kancah nasional dalam bidang Fisika dan Matematika.",
     konten: "Depok — MTS Al Hidayah CA kembali mengharumkan nama sekolah setelah delegasi siswa berhasil memborong 2 medali emas dan 1 perak dalam ajang Olimpiade Sains Nasional (OSN) 2026 yang diselenggarakan di Bandung. Kepala Sekolah Dr. H. M. Sutisna, M.Pd. menyampaikan rasa syukur dan apresiasi mendalam atas kerja keras para siswa dan guru pembimbing.",
-    gambar: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800&auto=format&fit=crop&q=80"
+    gambar: "/images/prestasi-olimpiade.jpg"
   },
   {
     id: "news-2",
@@ -121,17 +121,17 @@ export const MOCK_NEWS: NewsArticle[] = [
     penulis: "Panitia PPDB",
     ringkasan: "Pendaftaran siswa baru jalur prestasi, reguler, dan zonasi kini dapat dilakukan secara online melalui portal interaktif sekolah.",
     konten: "MTS Al Hidayah CA membuka kesempatan luas bagi lulusan SMP/MTs sederajat untuk bergabung menjadi bagian dari komunitas akademik unggul. Pendaftaran dilakukan secara full online dengan sistem verifikasi berkas digital dan tes seleksi berbasis komputer.",
-    gambar: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=800&auto=format&fit=crop&q=80"
+    gambar: "/images/ppdb-2026.jpg"
   },
   {
     id: "news-3",
-    judul: "Festival Literasi & Seni Nusantara (FSLN) 2026 Sukses Digelar",
-    kategori: "Kegiatan Siswa",
-    tanggal: "28 Agustus 2026",
-    penulis: "OSIS Nusantara Madani",
-    ringkasan: "Ajang tahunan unjuk bakat seni teater, paduan suara, dan pameran karya digital sukses memukau ratusan pengunjung.",
-    konten: "Pentas seni akbar FSLN 2026 menampilkan berbagai kreasi seni rupa, teater musikal, dan pameran robotika hasil karya siswa klub ekstrakurikuler sekolah. Acara ini dihadiri oleh para orang tua murid serta tamu undangan dari dinas pendidikan.",
-    gambar: "https://images.unsplash.com/photo-1511578314322-379afb476865?w=800&auto=format&fit=crop&q=80"
+    judul: "Hari Kartini 2026 di MTS Al Hidayah CA",
+    kategori: "Kegiatan Sekolah",
+    tanggal: "21 April 2026",
+    penulis: "Admin",
+    ringkasan: "Kegiatan rutin tahunan hari kartini dengan diadakan upacara dan pawai",
+    konten: "Peringatan Hari Kartini 2026 di lingkungan MTS Al Hidayah CA berlangsung meriah dengan upacara adat Nusantara, lomba busana daerah, serta pembacaan puisi pahlawan nasional. Seluruh siswa dan guru mengenakan pakaian adat tradisional dengan penuh semangat kebersamaan.",
+    gambar: "/images/hari-kartini-2026.jpg"
   }
 ];
 
