@@ -1101,7 +1101,14 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
                 {newsList.map((ns) => (
                   <div key={ns.id} className="p-5 rounded-2xl border border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-50/50">
                     <div className="flex items-center gap-4">
-                      <img src={ns.gambar} alt={ns.judul} className="w-20 h-16 rounded-xl object-cover border border-slate-200 shrink-0" />
+                      <img 
+                        src={ns.gambar && ns.gambar.trim() !== "" ? ns.gambar : "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80"} 
+                        alt={ns.judul} 
+                        className="w-20 h-16 rounded-xl object-cover border border-slate-200 shrink-0 bg-slate-100" 
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80";
+                        }}
+                      />
                       <div>
                         <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-0.5 rounded-full inline-block mb-1">{ns.kategori}</span>
                         <h4 className="font-bold text-slate-900 text-sm sm:text-base">{ns.judul}</h4>
