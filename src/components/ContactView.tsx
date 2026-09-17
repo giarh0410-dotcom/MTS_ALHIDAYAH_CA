@@ -25,7 +25,6 @@ export const ContactView: React.FC<ContactViewProps> = ({ currentLang = "ID" }) 
     telepon: "",
     subjek: "",
     pesan: "",
-    captcha: "",
   });
   const [submitted, setSubmitted] = useState(false);
 
@@ -206,7 +205,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ currentLang = "ID" }) 
                     : `Terima kasih telah menghubungi ${SCHOOL_INFO.name}. Pesan Anda telah diteruskan ke email resmi madrasah: ${getSchoolEmail()}.`}
                 </p>
                 <button
-                  onClick={() => { setSubmitted(false); setFormData({ kategori: "", nama: "", email: "", telepon: "", subjek: "", pesan: "", captcha: "" }); }}
+                  onClick={() => { setSubmitted(false); setFormData({ kategori: "", nama: "", email: "", telepon: "", subjek: "", pesan: "" }); }}
                   className="mt-4 px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-xl transition"
                 >
                   {currentLang === "EN" ? "Send Another Message" : "Kirim Pesan Lain"}
@@ -293,24 +292,6 @@ export const ContactView: React.FC<ContactViewProps> = ({ currentLang = "ID" }) 
                     className="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     required
                   ></textarea>
-                </div>
-
-                {/* Captcha & Submit */}
-                <div className="space-y-2 pt-2">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">{currentLang === "EN" ? "Verification Code" : "Kode Verifikasi"}</label>
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
-                    <div className="bg-slate-100 border border-slate-200 rounded-xl px-6 py-3 font-mono font-bold tracking-widest text-slate-600 text-lg select-none bg-[radial-gradient(#cbd5e1_1px,transparent_1px)] [background-size:12px_12px] flex items-center justify-center">
-                      <span className="line-through opacity-70">x799a</span> &nbsp; <span className="text-emerald-700 font-extrabold">j9a</span>
-                    </div>
-                    <input
-                      type="text"
-                      placeholder={currentLang === "EN" ? "Enter code" : "Masukkan kode"}
-                      value={formData.captcha}
-                      onChange={(e) => setFormData({ ...formData, captcha: e.target.value })}
-                      className="flex-1 px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      required
-                    />
-                  </div>
                 </div>
 
                 <div className="pt-4">
