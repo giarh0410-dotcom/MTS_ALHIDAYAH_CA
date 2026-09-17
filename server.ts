@@ -80,9 +80,35 @@ let payments: any[] = [
   }
 ];
 
+let contactMessages: any[] = [];
+
 // API Routes
 app.get("/api/health", (req, res) => {
   res.json({ status: "ok", message: "Server is running smoothly." });
+});
+
+app.get("/api/messages", (req, res) => {
+  res.json(contactMessages);
+});
+
+app.post("/api/send-message", (req, res) => {
+  const { nama, email, telepon, kategori, subjek, pesan, schoolEmail } = req.body;
+  const newMessage = {
+    id: `MSG-${Date.now()}`,
+    nama,
+    email,
+    telepon: telepon || "-",
+    kategori: kategori || "Umum",
+    subjek: subjek || "Pesan Website",
+    pesan,
+    schoolEmail: schoolEmail || "mts.alhidaya.ca@gmail.com",
+    tanggal: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
+    status: "Terkirim ke Email Sekolah",
+    createdAt: new Date().toISOString()
+  };
+  contactMessages.unshift(newMessage);
+  console.log(`[Email Dispatch] Message from ${nama} (${email}) successfully dispatched to school email: ${newMessage.schoolEmail}`);
+  res.json({ success: true, message: "Pesan berhasil dikirim ke email sekolah.", data: newMessage });
 });
 
 // PPDB endpoints

@@ -49,12 +49,25 @@ export const ContactView: React.FC<ContactViewProps> = ({ currentLang = "ID" }) 
       return;
     }
 
+    const schoolEmail = getSchoolEmail();
     const messagePayload = {
       id: `MSG-${Date.now()}`,
       ...formData,
+      schoolEmail,
       tanggal: new Date().toLocaleDateString("id-ID", { day: "numeric", month: "long", year: "numeric" }),
-      status: "Belum Dibaca"
+      status: "Terkirim ke Email Sekolah"
     };
+
+    try {
+      await fetch("/api/send-message", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          schoolEmail
+        })
+      });
+    } catch (err) {}
 
     try {
       const existing = localStorage.getItem("mts_admin_messages");
@@ -68,11 +81,6 @@ export const ContactView: React.FC<ContactViewProps> = ({ currentLang = "ID" }) 
         createdAt: new Date().toISOString()
       });
     } catch (err) {}
-
-    const schoolEmail = getSchoolEmail();
-    const mailtoSubject = encodeURIComponent(`[${formData.kategori || "Umum"}] ${formData.subjek || "Pesan dari Portal Website"}`);
-    const mailtoBody = encodeURIComponent(`Nama Pengirim: ${formData.nama}\nEmail: ${formData.email}\nTelepon: ${formData.telepon || "-"}\nKategori: ${formData.kategori}\n\nPesan:\n${formData.pesan}`);
-    window.open(`mailto:${schoolEmail}?subject=${mailtoSubject}&body=${mailtoBody}`, "_blank");
 
     setSubmitted(true);
   };

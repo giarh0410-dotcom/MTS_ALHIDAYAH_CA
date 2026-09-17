@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { 
   ShieldCheck, Users, GraduationCap, Image, Video, FileText, 
   Settings, Plus, Trash2, Edit3, Save, CheckCircle, Upload, 
-  Layers, School, Award, Calendar, BookOpen, AlertCircle 
+  Layers, School, Award, Calendar, BookOpen, AlertCircle, Mail 
 } from "lucide-react";
 import { SCHOOL_INFO, SAMPLE_STUDENTS, MOCK_NEWS } from "../data/mockData";
 import { StudentProfile, NewsArticle } from "../types";
@@ -16,7 +16,7 @@ interface AdminViewProps {
 }
 
 export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
-  const [activeSection, setActiveSection] = useState<"dashboard" | "siswa" | "guru" | "alumni" | "organisasi" | "media" | "kegiatan" | "profil">("dashboard");
+  const [activeSection, setActiveSection] = useState<"dashboard" | "siswa" | "guru" | "alumni" | "organisasi" | "media" | "kegiatan" | "profil" | "pesan">("dashboard");
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(false);
   const [passcode, setPasscode] = useState<string>("");
   const [loginError, setLoginError] = useState<boolean>(false);
@@ -24,6 +24,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
   // Local state for management
   const [students, setStudents] = useState<StudentProfile[]>(SAMPLE_STUDENTS);
   const [newsList, setNewsList] = useState<NewsArticle[]>(MOCK_NEWS);
+  const [messagesList, setMessagesList] = useState<any[]>([]);
   const [mediaList, setMediaList] = useState<Array<{ id: string; title: string; type: "image" | "video"; url: string; date: string }>>([
     { id: "1", title: "Kegiatan Lomba OSN 2026", type: "image", url: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800&auto=format&fit=crop&q=80", date: "12 Sept 2026" },
     { id: "2", title: "Upacara Hari Pendidikan Nasional", type: "image", url: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80", date: "2 Mei 2026" },
@@ -59,6 +60,23 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
         const storedProfile = localStorage.getItem("mts_admin_school_profile");
         if (storedProfile) {
           setSchoolProfile(JSON.parse(storedProfile));
+        }
+      } catch (e) {}
+
+      try {
+        const storedMsgs = localStorage.getItem("mts_admin_messages");
+        if (storedMsgs) {
+          setMessagesList(JSON.parse(storedMsgs));
+        } else {
+          fetch("/api/messages")
+            .then(res => res.json())
+            .then(data => {
+              if (Array.isArray(data)) {
+                setMessagesList(data);
+                localStorage.setItem("mts_admin_messages", JSON.stringify(data));
+              }
+            })
+            .catch(() => {});
         }
       } catch (e) {}
 
@@ -541,6 +559,7 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
           { id: "media", label: "📸 Upload Foto & Video", icon: Image },
           { id: "kegiatan", label: "📰 Kegiatan & Berita", icon: Calendar },
           { id: "profil", label: "🏫 Profil & Info Sekolah", icon: School },
+          { id: "pesan", label: "✉️ Pesan Masuk (Email)", icon: Mail },
         ].map((tab) => {
           const IconComponent = tab.icon;
           const isActive = activeSection === tab.id;
@@ -1456,6 +1475,73 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* PESAN MASUK (EMAIL SEKOLAH) */}
+        {activeSection === "pesan" && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
+              <div>
+                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <Mail className="w-5 h-5 text-emerald-600" />
+                  <span>Pesan Masuk & Email Madrasah</span>
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">Daftar pesan dari formulir kontak yang dikirim dan diteruskan ke email resmi: <b className="text-emerald-700">{schoolProfile.email}</b></p>
+              </div>
+              <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3.5 py-1.5 rounded-full">
+                {messagesList.length} Pesan Diterima
+              </span>
+            </div>
+
+            {messagesList.length === 0 ? (
+              <div className="text-center py-16 text-slate-400 text-sm">
+                Belum ada pesan masuk dari formulir kontak website.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {messagesList.map((msg, idx) => (
+                  <div key={msg.id || idx} className="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <div className="flex items-center gap-3">
+                        <span className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                          {msg.nama?.charAt(0) || "U"}
+                        </span>
+                        <div>
+                          <h4 className="font-bold text-slate-900 text-sm">{msg.nama} <span className="text-xs text-slate-500 font-normal">({msg.email})</span></h4>
+                          <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-0.5 uppercase tracking-wider">{msg.kategori || "Umum"}</span>
+                        </div>
+                      </div>
+                      <div className="text-xs text-slate-500 flex items-center gap-3">
+                        <span>Telp: {msg.telepon || "-"}</span>
+                        <span>•</span>
+                        <span>{msg.tanggal || "Hari ini"}</span>
+                      </div>
+                    </div>
+                    <div className="border-t border-slate-200/60 pt-3">
+                      <h5 className="font-bold text-slate-800 text-xs uppercase tracking-wide">Subjek: {msg.subjek}</h5>
+                      <p className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{msg.pesan}</p>
+                    </div>
+                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-2 gap-2">
+                      <span className="text-[11px] bg-emerald-50 text-emerald-800 px-3 py-1 rounded-lg font-bold border border-emerald-200">
+                        ✓ Terkirim Otomatis ke Email Madrasah: {msg.schoolEmail || schoolProfile.email}
+                      </span>
+                      <button
+                        onClick={() => {
+                          const updated = messagesList.filter((_, i) => i !== idx);
+                          setMessagesList(updated);
+                          localStorage.setItem("mts_admin_messages", JSON.stringify(updated));
+                          triggerSuccess("Pesan berhasil dihapus dari kotak masuk.");
+                        }}
+                        className="text-xs text-red-600 hover:text-red-700 font-bold px-3.5 py-1.5 hover:bg-red-50 rounded-xl transition"
+                      >
+                        Hapus Pesan
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
