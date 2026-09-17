@@ -81,6 +81,10 @@ export const ContactView: React.FC<ContactViewProps> = ({ currentLang = "ID" }) 
       });
     } catch (err) {}
 
+    const mailtoSubject = encodeURIComponent(`[${formData.kategori || "Umum"}] ${formData.subjek || "Pesan dari Portal Website"}`);
+    const mailtoBody = encodeURIComponent(`Nama Pengirim: ${formData.nama}\nEmail: ${formData.email}\nTelepon: ${formData.telepon || "-"}\nKategori: ${formData.kategori}\n\nPesan:\n${formData.pesan}`);
+    window.open(`mailto:${schoolEmail}?subject=${mailtoSubject}&body=${mailtoBody}`, "_blank");
+
     setSubmitted(true);
   };
 
