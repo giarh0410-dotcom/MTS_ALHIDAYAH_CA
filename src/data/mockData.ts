@@ -6,6 +6,7 @@ export const SCHOOL_INFO = new Proxy({
   address: "Jl. Cagar Alam, Pancoran Mas, Kota Depok",
   phone: "(021) 555-0192",
   email: "mts.alhidaya.ca@gmail.com",
+  website: "https://alhidayahdepok.sch.id",
   accreditation: "Terakreditasi A (Unggul)",
   principal: "Saepul, S.Pd.",
   foundedYear: 2023,

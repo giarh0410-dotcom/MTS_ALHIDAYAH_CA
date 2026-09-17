@@ -1416,6 +1416,16 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
                   />
                 </div>
               </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Website Resmi Sekolah</label>
+                <input
+                  type="text"
+                  value={schoolProfile.website || ""}
+                  onChange={(e) => setSchoolProfile({...schoolProfile, website: e.target.value})}
+                  placeholder="https://..."
+                  className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                />
+              </div>
               <div className="sm:col-span-2 flex justify-end">
                 <button
                   type="submit"

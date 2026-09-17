@@ -155,7 +155,7 @@ export const ContactView: React.FC<ContactViewProps> = ({ currentLang = "ID" }) 
                 </div>
                 <div>
                   <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">Website</span>
-                  <p className="text-emerald-600 font-semibold mt-0.5">https://alhidayahdepok.sch.id</p>
+                  <p className="text-emerald-600 font-semibold mt-0.5">{SCHOOL_INFO.website}</p>
                 </div>
               </div>
             </div>
