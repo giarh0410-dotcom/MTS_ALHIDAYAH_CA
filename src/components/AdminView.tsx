@@ -10,6 +10,7 @@ import { AnimatedDotGrid, AnimatedArrow } from "./AnimatedDecorations";
 import { db, handleFirestoreError, OperationType } from "../lib/firebase";
 import { collection, getDocs, doc, setDoc, deleteDoc } from "firebase/firestore";
 import { compressImage, compressVideo, getLocalMediaDatabase, saveLocalMediaItem, deleteLocalMediaItem, LocalStoredMediaItem } from "../lib/mediaCompressor";
+import { authenticateGmail, sendGmailMessage, fetchGmailMessages } from "../lib/gmailApi";
 
 interface AdminViewProps {
   currentLang?: string;
@@ -25,6 +26,66 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
   const [students, setStudents] = useState<StudentProfile[]>(SAMPLE_STUDENTS);
   const [newsList, setNewsList] = useState<NewsArticle[]>(MOCK_NEWS);
   const [messagesList, setMessagesList] = useState<any[]>([]);
+  const [gmailToken, setGmailToken] = useState<string | null>(null);
+  const [gmailUser, setGmailUser] = useState<string | null>(null);
+  const [gmailRemoteMessages, setGmailRemoteMessages] = useState<any[]>([]);
+  const [isConnectingGmail, setIsConnectingGmail] = useState<boolean>(false);
+  const [isSyncingGmail, setIsSyncingGmail] = useState<boolean>(false);
+  const [replyModalOpen, setReplyModalOpen] = useState<boolean>(false);
+  const [replyTargetEmail, setReplyTargetEmail] = useState<string>("");
+  const [replySubject, setReplySubject] = useState<string>("");
+  const [replyBody, setReplyBody] = useState<string>("");
+
+  const handleConnectGmail = async () => {
+    setIsConnectingGmail(true);
+    try {
+      const res = await authenticateGmail();
+      setGmailToken(res.accessToken);
+      setGmailUser(res.user.email || "Admin Gmail");
+      triggerSuccess(`Berhasil terhubung ke akun Gmail: ${res.user.email}`);
+      const msgs = await fetchGmailMessages(res.accessToken);
+      setGmailRemoteMessages(msgs);
+    } catch (err: any) {
+      alert("Gagal otentikasi Gmail: " + (err.message || "Unknown error"));
+    } finally {
+      setIsConnectingGmail(false);
+    }
+  };
+
+  const handleSyncGmail = async () => {
+    if (!gmailToken) return;
+    setIsSyncingGmail(true);
+    try {
+      const msgs = await fetchGmailMessages(gmailToken);
+      setGmailRemoteMessages(msgs);
+      triggerSuccess("Kotak masuk Gmail berhasil disinkronkan!");
+    } catch (err: any) {
+      alert("Gagal sinkronisasi Gmail: " + err.message);
+    } finally {
+      setIsSyncingGmail(false);
+    }
+  };
+
+  const handleSendReplyGmail = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!gmailToken) {
+      alert("Harap hubungkan akun Gmail terlebih dahulu.");
+      return;
+    }
+    if (!replyTargetEmail || !replySubject || !replyBody) {
+      alert("Mohon lengkapi penerima, subjek, dan isi pesan.");
+      return;
+    }
+    try {
+      await sendGmailMessage(gmailToken, replyTargetEmail, replySubject, replyBody);
+      triggerSuccess(`Email berhasil dikirim ke ${replyTargetEmail} melalui Gmail API!`);
+      setReplyModalOpen(false);
+      setReplySubject("");
+      setReplyBody("");
+    } catch (err: any) {
+      alert("Gagal mengirim email: " + err.message);
+    }
+  };
   const [mediaList, setMediaList] = useState<Array<{ id: string; title: string; type: "image" | "video"; url: string; date: string }>>([
     { id: "1", title: "Kegiatan Lomba OSN 2026", type: "image", url: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800&auto=format&fit=crop&q=80", date: "12 Sept 2026" },
     { id: "2", title: "Upacara Hari Pendidikan Nasional", type: "image", url: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&auto=format&fit=crop&q=80", date: "2 Mei 2026" },
@@ -1478,70 +1539,205 @@ export const AdminView: React.FC<AdminViewProps> = ({ currentLang = "ID" }) => {
           </div>
         )}
 
-        {/* PESAN MASUK (EMAIL SEKOLAH) */}
+        {/* PESAN MASUK & GMAIL INTEGRATION */}
         {activeSection === "pesan" && (
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
-              <div>
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <Mail className="w-5 h-5 text-emerald-600" />
-                  <span>Pesan Masuk & Email Madrasah</span>
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">Daftar pesan dari formulir kontak yang dikirim dan diteruskan ke email resmi: <b className="text-emerald-700">{schoolProfile.email}</b></p>
+          <div className="space-y-6">
+            {/* Gmail Integration Banner */}
+            <div className="bg-gradient-to-r from-emerald-900 to-teal-800 text-white rounded-3xl p-6 sm:p-8 shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="space-y-2 text-center md:text-left">
+                <div className="inline-flex items-center gap-2 bg-white/10 px-3 py-1 rounded-full text-xs font-semibold text-emerald-200">
+                  <Mail className="w-3.5 h-3.5" /> Google Workspace Gmail API
+                </div>
+                <h3 className="text-xl font-bold">Integrasi Gmail Resmi Sekolah</h3>
+                <p className="text-xs text-emerald-100 max-w-xl">
+                  Hubungkan akun Gmail resmi madrasah (<b className="text-white">{schoolProfile.email}</b>) untuk mengirim balasan email langsung ke orang tua/siswa dan menyinkronkan kotak masuk secara real-time.
+                </p>
               </div>
-              <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3.5 py-1.5 rounded-full">
-                {messagesList.length} Pesan Diterima
-              </span>
+
+              <div>
+                {!gmailToken ? (
+                  <button
+                    onClick={handleConnectGmail}
+                    disabled={isConnectingGmail}
+                    className="gsi-material-button flex items-center gap-3 bg-white text-slate-700 font-semibold px-5 py-3 rounded-2xl shadow-lg hover:bg-slate-100 transition disabled:opacity-50"
+                  >
+                    <div className="gsi-material-button-icon">
+                      <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" className="w-5 h-5">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                      </svg>
+                    </div>
+                    <span>{isConnectingGmail ? "Menghubungkan..." : "Hubungkan Akun Gmail"}</span>
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <div className="text-right hidden sm:block">
+                      <span className="text-[10px] uppercase tracking-wider text-emerald-300 block font-bold">Terhubung ke Gmail</span>
+                      <span className="text-xs font-bold text-white">{gmailUser}</span>
+                    </div>
+                    <button
+                      onClick={handleSyncGmail}
+                      disabled={isSyncingGmail}
+                      className="bg-emerald-700 hover:bg-emerald-600 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5"
+                    >
+                      {isSyncingGmail ? "Menyinkronkan..." : "🔄 Sinkronkan Kotak Masuk"}
+                    </button>
+                    <button
+                      onClick={() => setReplyModalOpen(true)}
+                      className="bg-white text-emerald-900 hover:bg-emerald-50 font-bold px-4 py-2.5 rounded-xl text-xs transition shadow-sm flex items-center gap-1.5"
+                    >
+                      <Mail className="w-3.5 h-3.5" /> Kirim Email Baru
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {messagesList.length === 0 ? (
-              <div className="text-center py-16 text-slate-400 text-sm">
-                Belum ada pesan masuk dari formulir kontak website.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {messagesList.map((msg, idx) => (
-                  <div key={msg.id || idx} className="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                      <div className="flex items-center gap-3">
-                        <span className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow-xs">
-                          {msg.nama?.charAt(0) || "U"}
-                        </span>
-                        <div>
-                          <h4 className="font-bold text-slate-900 text-sm">{msg.nama} <span className="text-xs text-slate-500 font-normal">({msg.email})</span></h4>
-                          <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-0.5 uppercase tracking-wider">{msg.kategori || "Umum"}</span>
-                        </div>
-                      </div>
-                      <div className="text-xs text-slate-500 flex items-center gap-3">
-                        <span>Telp: {msg.telepon || "-"}</span>
-                        <span>•</span>
-                        <span>{msg.tanggal || "Hari ini"}</span>
-                      </div>
+            {/* Reply Modal */}
+            {replyModalOpen && (
+              <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-2xl space-y-5 animate-fade-in">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-3">
+                    <h4 className="font-bold text-slate-900 text-lg flex items-center gap-2">
+                      <Mail className="w-5 h-5 text-emerald-600" /> Kirim Email Resmi via Gmail API
+                    </h4>
+                    <button onClick={() => setReplyModalOpen(false)} className="text-slate-400 hover:text-slate-700 font-bold text-sm">✕</button>
+                  </div>
+                  <form onSubmit={handleSendReplyGmail} className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Email Tujuan (Penerima)</label>
+                      <input
+                        type="email"
+                        required
+                        value={replyTargetEmail}
+                        onChange={(e) => setReplyTargetEmail(e.target.value)}
+                        placeholder="contoh@gmail.com"
+                        className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                      />
                     </div>
-                    <div className="border-t border-slate-200/60 pt-3">
-                      <h5 className="font-bold text-slate-800 text-xs uppercase tracking-wide">Subjek: {msg.subjek}</h5>
-                      <p className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{msg.pesan}</p>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Subjek Email</label>
+                      <input
+                        type="text"
+                        required
+                        value={replySubject}
+                        onChange={(e) => setReplySubject(e.target.value)}
+                        placeholder="Subjek / Perihal Pesan"
+                        className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                      />
                     </div>
-                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-2 gap-2">
-                      <span className="text-[11px] bg-emerald-50 text-emerald-800 px-3 py-1 rounded-lg font-bold border border-emerald-200">
-                        ✓ Terkirim Otomatis ke Email Madrasah: {msg.schoolEmail || schoolProfile.email}
-                      </span>
+                    <div>
+                      <label className="block text-xs font-bold text-slate-700 mb-1">Isi Pesan / Balasan</label>
+                      <textarea
+                        required
+                        rows={5}
+                        value={replyBody}
+                        onChange={(e) => setReplyBody(e.target.value)}
+                        placeholder="Tulis pesan resmi madrasah..."
+                        className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-slate-300 focus:ring-2 focus:ring-emerald-500 outline-none"
+                      />
+                    </div>
+                    <div className="flex justify-end gap-3 pt-2">
                       <button
-                        onClick={() => {
-                          const updated = messagesList.filter((_, i) => i !== idx);
-                          setMessagesList(updated);
-                          localStorage.setItem("mts_admin_messages", JSON.stringify(updated));
-                          triggerSuccess("Pesan berhasil dihapus dari kotak masuk.");
-                        }}
-                        className="text-xs text-red-600 hover:text-red-700 font-bold px-3.5 py-1.5 hover:bg-red-50 rounded-xl transition"
+                        type="button"
+                        onClick={() => setReplyModalOpen(false)}
+                        className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 rounded-xl transition"
                       >
-                        Hapus Pesan
+                        Batal
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-5 py-2 text-sm font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl transition shadow-md"
+                      >
+                        Kirim Email Sekarang
                       </button>
                     </div>
-                  </div>
-                ))}
+                  </form>
+                </div>
               </div>
             )}
+
+            {/* Messages List */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm space-y-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-100 pb-4 gap-4">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <Mail className="w-5 h-5 text-emerald-600" />
+                    <span>Kotak Masuk Website & Formulir Kontak</span>
+                  </h3>
+                  <p className="text-xs text-slate-500 mt-0.5">Daftar pesan dari formulir kontak yang diteruskan ke email resmi: <b className="text-emerald-700">{schoolProfile.email}</b></p>
+                </div>
+                <span className="bg-emerald-100 text-emerald-800 text-xs font-bold px-3.5 py-1.5 rounded-full">
+                  {messagesList.length} Pesan Website
+                </span>
+              </div>
+
+              {messagesList.length === 0 ? (
+                <div className="text-center py-16 text-slate-400 text-sm">
+                  Belum ada pesan masuk dari formulir kontak website.
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {messagesList.map((msg, idx) => (
+                    <div key={msg.id || idx} className="p-6 rounded-2xl border border-slate-200 bg-slate-50/50 space-y-3">
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                        <div className="flex items-center gap-3">
+                          <span className="w-10 h-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                            {msg.nama?.charAt(0) || "U"}
+                          </span>
+                          <div>
+                            <h4 className="font-bold text-slate-900 text-sm">{msg.nama} <span className="text-xs text-slate-500 font-normal">({msg.email})</span></h4>
+                            <span className="text-[11px] text-emerald-700 font-semibold bg-emerald-50 px-2 py-0.5 rounded-md inline-block mt-0.5 uppercase tracking-wider">{msg.kategori || "Umum"}</span>
+                          </div>
+                        </div>
+                        <div className="text-xs text-slate-500 flex items-center gap-3">
+                          <span>Telp: {msg.telepon || "-"}</span>
+                          <span>•</span>
+                          <span>{msg.tanggal || "Hari ini"}</span>
+                        </div>
+                      </div>
+                      <div className="border-t border-slate-200/60 pt-3">
+                        <h5 className="font-bold text-slate-800 text-xs uppercase tracking-wide">Subjek: {msg.subjek}</h5>
+                        <p className="text-sm text-slate-700 mt-1 whitespace-pre-wrap">{msg.pesan}</p>
+                      </div>
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-2 gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] bg-emerald-50 text-emerald-800 px-3 py-1 rounded-lg font-bold border border-emerald-200">
+                            ✓ Terkirim ke Email Sekolah: {msg.schoolEmail || schoolProfile.email}
+                          </span>
+                          {gmailToken && (
+                            <button
+                              onClick={() => {
+                                setReplyTargetEmail(msg.email);
+                                setReplySubject(`Balasan: ${msg.subjek}`);
+                                setReplyBody(`Kepada Yth. ${msg.nama},\n\nTerima kasih telah menghubungi ${schoolProfile.name}. Mengenai pesan Anda tentang "${msg.subjek}", berikut kami sampaikan tanggapan:\n\n...\n\nHormat kami,\nTim Administrasi ${schoolProfile.name}`);
+                                setReplyModalOpen(true);
+                              }}
+                              className="text-xs bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-3 py-1 rounded-lg transition shadow-xs flex items-center gap-1"
+                            >
+                              <Mail className="w-3 h-3" /> Balas via Gmail
+                            </button>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => {
+                            const updated = messagesList.filter((_, i) => i !== idx);
+                            setMessagesList(updated);
+                            localStorage.setItem("mts_admin_messages", JSON.stringify(updated));
+                            triggerSuccess("Pesan berhasil dihapus dari kotak masuk.");
+                          }}
+                          className="text-xs text-red-600 hover:text-red-700 font-bold px-3.5 py-1.5 hover:bg-red-50 rounded-xl transition"
+                        >
+                          Hapus Pesan
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )}
 
